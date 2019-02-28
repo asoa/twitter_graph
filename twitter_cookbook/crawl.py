@@ -6,10 +6,19 @@ import json
 
 class Crawl(object):
     def __init__(self, *args, **kwargs):
+        """crawls a twitter graph starting from the root node and building a queue of reciprocal friends/followers
+        i.e. root -> set(friend/followers) -> set(friend/followers) ... self.node.count
+
+        Args:
+            twitter_api: (twitter api) authenticated twitter api obj
+            screen_name: (str) twitter screen name
+            node_max: (int) maximum amount of nodes to crawl, default:100
+            file_output: (file obj) file to write nodes to
+            seed_id: (int) starting point of crawl
+        """
         self.kwargs = {k:v for k,v in kwargs.items()}
         self.twitter_api = self.kwargs.get('twitter_api', None)
         self.screen_name = self.kwargs.get('screen_name', None)
-        # self.limit = self.kwargs.get('limit', 5000)
         self.node_count = 0
         self.node_max = self.kwargs.get('node_max', 100)
         self.seed_id = None
@@ -36,6 +45,7 @@ class Crawl(object):
             # set queue to next_queue and next_queue to empty list in preparation for another call to
             # get_friends_followers_ids()
             (self.queue, self.next_queue) = (self.next_queue, [])
+            print(self.queue)
             for fid in self.queue:  # get the friends and followers for each id in the queue
                 # variables returned from call to Friends.get_friends_followers_ids
                 friend_ids, follower_ids = Friends(twitter_api=self.twitter_api, user_id=fid).get_friends_followers_ids()
@@ -49,12 +59,6 @@ class Crawl(object):
                 self.node_list.extend(nodes_no_root)  # add to node list
                 print("{} nodes added to the queue".format(len(nodes_no_root)))
                 print(f"{self.node_count} total nodes")
-                # if self.node_count > self.node_max and len(self.next_queue) == 0:
-                #     self.write_to_disk(fid, 'reciprocal', reciprocal_friends)  # writes all reciprocal friends--including root--if present
-                #     break
-                # else:
-                #     self.write_to_disk(fid, 'reciprocal', reciprocal_friends)
-                #     continue
                 self.write_to_disk(fid, 'reciprocal', reciprocal_friends)  # writes all reciprocal friends--including root--if present
                 if self.node_count > self.node_max:
                     break
@@ -65,16 +69,16 @@ class Crawl(object):
         Args:
             friends: (list) of friends returned by call to Friends.get_friends_followers_ids()
 
-        Returns: top n reciprocal friends
+        Returns: top 5 reciprocal friends
         """
         reciprocal_friends = list(set(friend_ids) & set(follower_ids))  # get intersection of two lists
-        # if len(reciprocal_friends) == 0:
-        #     print(f"No reciprocal friends found for {self.screen_name} after searching {min(friend_ids,follower_ids)} IDs")
-        #     exit(1)
+        if len(reciprocal_friends) == 0:
+            print(f"No reciprocal friends found for {self.screen_name} after searching {min(friend_ids,follower_ids)} IDs")
+            exit(1)
         # get top 5 reciprocal friends by followers_count
         top_reciprocal_friends = Profile(twitter_api=self.twitter_api, user_ids=reciprocal_friends).get_top_friends()
-        # top_rfriends_no_recur = [id for id in top_reciprocal_friends if id != self.seed_id]
-        return top_reciprocal_friends
+        top_rfriends_no_recur = [id for id in top_reciprocal_friends if id != self.seed_id]
+        return top_rfriends_no_recur
 
     def write_to_disk(self, user_id, label, ids, screen_name=None):
         if screen_name:
