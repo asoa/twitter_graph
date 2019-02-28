@@ -38,7 +38,7 @@ class Profile(object):
             # Process 100 items at a time per the API specifications for /users/lookup.
             # See http://bit.ly/2Gcjfzr for details.
 
-            items_str = ','.join([str(item) for item in items[:100]]) # 2000
+            items_str = ','.join([str(item) for item in items[:100]])
             items = items[100:]
 
             if self.screen_names:
