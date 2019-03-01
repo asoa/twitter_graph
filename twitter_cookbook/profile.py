@@ -1,5 +1,9 @@
 from twitter_request import make_twitter_request
 
+"""
+code derived from Mining the Social Web, 3rd Edition (Mikhail Klassen, Matthew A. Russell)
+
+"""
 
 class Profile(object):
     def __init__(self, *args, **kwargs):

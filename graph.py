@@ -5,7 +5,6 @@ import networkx as nx
 from networkx.drawing.nx_pydot import write_dot
 import matplotlib.pyplot as plt
 import json
-
 import authenticate
 from profile import Profile
 from graphviz import render
@@ -22,11 +21,13 @@ class Graph(object):
     """
     def __init__(self, *args, **kwargs):
         self.kwargs = {k:v for k,v in kwargs.items()}
-        self.file = self.kwargs.get('file', None)
+        self.screen_name = self.kwargs.get('screen_name', None)
+        self.file = f'twitter_graph_{self.screen_name}.txt'
         self.twitter_api = self.kwargs.get('twitter_api', None)
         self.use_name = self.kwargs.get('use_name', False)
         self.g = nx.Graph()
         self.nodelist = []
+        self.name_id_lookup = {}
 
         self.build_graph()
         self.build_graphViz()
@@ -48,9 +49,10 @@ class Graph(object):
         node_list_tup = [(int(k),node) for k,nodes in node_list_dict.items() for node in nodes]
 
         if self.use_name:  # get screen names for ids
-            ids = [id for ids in node_list_tup for id in ids]
-            names = Profile(twitter_api=self.twitter_api, user_ids=ids, get_names=True).get_screen_name()
-            name_tuple = [(names.get(tup[0]), names.get(tup[1])) for tup in node_list_tup]
+            ids = list(set([id for ids in node_list_tup for id in ids]))
+            # ids = ','.join(str(id) for id in ids)
+            self.get_screen_name(Profile(twitter_api=self.twitter_api, user_ids=ids).items_to_info)
+            name_tuple = [(self.name_id_lookup.get(tup[0]), self.name_id_lookup.get(tup[1])) for tup in node_list_tup]
 
             # create graph object with edges and implicit nodes
             self.g = nx.Graph()
@@ -96,6 +98,11 @@ class Graph(object):
 
         fmt = f"Graph diamter: {diameter}\nAverage distance: {avg_shortest_path}\nTotal nodes: {node_count}"
         print(fmt)
+
+    def get_screen_name(self, profiles):
+        for k,v in profiles.items():
+            self.name_id_lookup[k] = v['screen_name']
+            # self.name_id_lookup[user_info['id']] = user_info['screen_name']
 
 
 

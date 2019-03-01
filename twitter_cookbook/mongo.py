@@ -2,6 +2,10 @@ import json
 import pymongo  # pip install pymongo
 import authenticate
 
+"""
+code from Mining the Social Web, 3rd Edition (Mikhail Klassen, Matthew A. Russell)
+
+"""
 
 def save_to_mongo(data, mongo_db, mongo_db_coll, **mongo_conn_kw):
     # Connects to the MongoDB server running on

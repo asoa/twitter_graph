@@ -3,6 +3,10 @@ from mongo import save_to_mongo
 from profile import Profile
 import json
 
+"""
+code derived from Mining the Social Web, 3rd Edition (Mikhail Klassen, Matthew A. Russell)
+
+"""
 
 class Crawl(object):
     def __init__(self, *args, **kwargs):
@@ -53,7 +57,7 @@ class Crawl(object):
                 if reciprocal_friends == 0:
                     self.write_to_disk(fid, 'reciprocal', reciprocal_friends)
                     continue
-                nodes_no_root = [node for node in reciprocal_friends if node != self.seed_id]  # removes the root node if present to prevent recursion
+                nodes_no_root = [node for node in reciprocal_friends if node != int(self.seed_id)]  # removes the root node if present to prevent recursion
                 self.node_count += len([node for node in nodes_no_root if node not in self.node_list])  # increment count of nodes
                 self.next_queue.extend(nodes_no_root)  # add to the queue
                 self.node_list.extend(nodes_no_root)  # add to node list
@@ -77,7 +81,7 @@ class Crawl(object):
             exit(1)
         # get top 5 reciprocal friends by followers_count
         top_reciprocal_friends = Profile(twitter_api=self.twitter_api, user_ids=reciprocal_friends).get_top_friends()
-        top_rfriends_no_recur = [id for id in top_reciprocal_friends if id != self.seed_id]
+        top_rfriends_no_recur = [id for id in top_reciprocal_friends if id != int(self.seed_id)]
         return top_rfriends_no_recur
 
     def write_to_disk(self, user_id, label, ids, screen_name=None):
