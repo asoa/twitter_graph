@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
 import authenticate
-from twitter_cookbook.crawl import Crawl
+from crawl import Crawl
 from graph import Graph
 import traceback
-import time
 
 
 def prompt():

@@ -1,5 +1,4 @@
 from friends import Friends
-from mongo import save_to_mongo
 from profile import Profile
 import json
 
