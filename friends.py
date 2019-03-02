@@ -24,8 +24,8 @@ class Friends:
         self.user_id = self.kwargs.get('user_id', None)
         self.friends_ids = []
         self.followers_ids = []
-        self.friends_limit = 150000
-        self.followers_limit = 150000
+        self.friends_limit = 5000
+        self.followers_limit = 5000
         self.found_reciprocal = False
         self.reciprocal_friends_count = 0
         self.friends_cursor = -1
@@ -44,7 +44,7 @@ class Friends:
         assert (self.screen_name != None) != (self.user_id != None), \
             "Must have screen_name or user_id, but not both"
 
-        while not self.found_reciprocal:  # loop until 5 or more reciprocal friends are found
+        while not self.found_reciprocal and (self.friends_cursor != 0 or self.follower_cursor != 0):  # loop until 5 or more reciprocal friends are found
 
             # get friends/follower ids in two sequential for loops to check for reciprocal friends after each batch of
             # 5000 friends/follower ids  TODO: generalize this into a function i.e get_ids(api) -> id_list
@@ -93,7 +93,8 @@ class Friends:
                     break
                 print(f"Got {len(response['ids'])} total {label} ids for {self.screen_name or self.user_id}")
                 # check for reciprocal friends
-                self.found_reciprocal = self._check_reciprocal()
+
+            self.found_reciprocal = self._check_reciprocal()
 
         return self.friends_ids[:maxint], self.followers_ids[:maxint]
 
@@ -106,10 +107,14 @@ class Friends:
         if len(self.reciprocal_friends) >= 5:
             self._get_top_friends()
             return True
-        if len(self.friends_ids) > self.friends_limit or len(self.followers_ids) > self.friends_limit:
+        elif len(self.friends_ids) > self.friends_limit or len(self.followers_ids) > self.friends_limit:
             print(f"Maximum friends/followers count of {self.friends_limit} reached. No reciprocal friends found for {self.user_id}")
             return True  # causes while loop to end and send emtpy reciprocal friend list back to caller
-        print(f"No reciprocal friends found for {self.screen_name or self.user_id}, getting more friends and followers")
+        elif self.friends_cursor == 0 or self.follower_cursor == 0:
+            print(f"No reciprocal friends found for {self.screen_name or self.user_id}, and cursor is 0")
+            return True
+        else:
+            print(f"No reciprocal friends found for {self.screen_name or self.user_id}, getting more friends and followers")
         return False
 
     def _get_top_friends(self):

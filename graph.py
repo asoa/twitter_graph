@@ -83,20 +83,14 @@ class Graph(object):
         render('dot', 'png', 'file.dot')  # saves the graphViz plot to current working directory
         graphviz.Source.from_file('file.dot')  # does the same thing, but renders the plot if ran interactively
 
-    def diameter(self):
-        # nx.diameter()
-        return nx.diameter(self.g)
-
-    def average_distance(self):
-        # nx.average_shortest_path_length()
-        return nx.average_shortest_path_length(self.g)
-
     def graph_statistics(self):
         diameter = nx.diameter(self.g)
         avg_shortest_path = nx.average_shortest_path_length(self.g)
         node_count = nx.number_of_nodes(self.g)
+        edge_count = nx.number_of_edges(self.g)
 
-        fmt = f"Graph diamter: {diameter}\nAverage distance: {avg_shortest_path}\nTotal nodes: {node_count}"
+        fmt = f"Graph diamter: {diameter}\nAverage distance: {avg_shortest_path}\nTotal nodes: {node_count}\n" \
+            f"Total edges: {edge_count}"
         print(fmt)
 
     def get_screen_name(self, profiles):

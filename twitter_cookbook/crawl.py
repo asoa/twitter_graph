@@ -53,8 +53,10 @@ class Crawl(object):
             for fid in self.queue:  # get the friends and followers for each id in the queue
                 # variables returned from call to Friends.get_friends_followers_ids
                 friend_ids, follower_ids = Friends(twitter_api=self.twitter_api, user_id=fid).get_friends_followers_ids()
+                if len(friend_ids) == 0 or len(follower_ids) == 0:
+                    continue
                 reciprocal_friends = self.get_reciprocal_friends(friend_ids, follower_ids)  # returns top 5 sorted by followers_count
-                if reciprocal_friends == 0:
+                if len(reciprocal_friends) == 0:
                     self.write_to_disk(fid, 'reciprocal', reciprocal_friends)
                     continue
                 nodes_no_root = [node for node in reciprocal_friends if node != int(self.seed_id)]  # removes the root node if present to prevent recursion
@@ -76,9 +78,6 @@ class Crawl(object):
         Returns: top 5 reciprocal friends
         """
         reciprocal_friends = list(set(friend_ids) & set(follower_ids))  # get intersection of two lists
-        if len(reciprocal_friends) == 0:
-            print(f"No reciprocal friends found for {self.screen_name} after searching {min(friend_ids,follower_ids)} IDs")
-            exit(1)
         # get top 5 reciprocal friends by followers_count
         top_reciprocal_friends = Profile(twitter_api=self.twitter_api, user_ids=reciprocal_friends).get_top_friends()
         top_rfriends_no_recur = [id for id in top_reciprocal_friends if id != int(self.seed_id)]
