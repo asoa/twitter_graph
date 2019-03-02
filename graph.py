@@ -6,7 +6,7 @@ from networkx.drawing.nx_pydot import write_dot
 import matplotlib.pyplot as plt
 import json
 import authenticate
-from profile import Profile
+from twitter_cookbook.profile import Profile
 from graphviz import render
 import graphviz
 

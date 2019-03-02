@@ -30,6 +30,7 @@ class Friends:
         self.reciprocal_friends_count = 0
         self.friends_cursor = -1
         self.follower_cursor = -1
+        self.no_response = False
 
     def get_friends_followers_ids(self, _user_id=None):
         """use twitter friend.ids/follower.ids api to get friend/follower ids
@@ -89,6 +90,7 @@ class Friends:
                     self.followers_ids += response['ids']  # append returned follower ids
                     self.follower_cursor = response['next_cursor']  # points the cursor to the next page of results
                 else:
+                    self.no_response = True  # possible 401 error for protected account
                     print('No response')
                     break
                 print(f"Got {len(response['ids'])} total {label} ids for {self.screen_name or self.user_id}")
@@ -101,7 +103,7 @@ class Friends:
     def _check_reciprocal(self):
         """gets set intersection (reciprocal friends) of friends and follower lists
 
-        Returns: (boolean) returns True if reciprocal friends are found
+        Returns: (boolean) returns True if reciprocal friends are found or if no friends were returned
         """
         self.reciprocal_friends = list(set(self.friends_ids) & set(self.followers_ids))
         if len(self.reciprocal_friends) >= 5:
@@ -112,6 +114,8 @@ class Friends:
             return True  # causes while loop to end and send emtpy reciprocal friend list back to caller
         elif self.friends_cursor == 0 or self.follower_cursor == 0:
             print(f"No reciprocal friends found for {self.screen_name or self.user_id}, and cursor is 0")
+            return True
+        elif self.no_response:
             return True
         else:
             print(f"No reciprocal friends found for {self.screen_name or self.user_id}, getting more friends and followers")

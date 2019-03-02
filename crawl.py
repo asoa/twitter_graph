@@ -1,5 +1,5 @@
 from friends import Friends
-from profile import Profile
+from twitter_cookbook.profile import Profile
 import json
 
 """
